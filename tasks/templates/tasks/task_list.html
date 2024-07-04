@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Task List{% endblock %}
+
+{% block content %}
+<div class="flex flex-wrap">
+    <!-- Sidebar -->
+    <aside class="w-full md:w-1/4 p-4 bg-white rounded shadow mb-4 md:mb-0">
+        <ul class="space-y-2">
+            <li><a href="{% url 'dashboard' %}" class="block p-2 hover:bg-gray-200"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li><a href="{% url 'task_list' %}" class="block p-2 hover:bg-gray-200"><i class="fas fa-tasks"></i> Tasks</a></li>
+            <li><a href="{% url 'calendar' %}" class="block p-2 hover:bg-gray-200"><i class="fas fa-calendar-alt"></i> Calendar</a></li>
+            <li><a href="{% url 'members' %}" class="block p-2 hover:bg-gray-200"><i class="fas fa-users"></i> Members</a></li>
+        </ul>
+    </aside>
+
+    <!-- Task List -->
+    <div class="w-full md:w-3/4 p-4 bg-white rounded shadow mb-4 md:mb-0">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold">Task List</h2>
+            <input type="text" id="search" placeholder="Search tasks" class="p-2 border rounded" oninput="searchTasks()">
+        </div>
+
+        <div>
+            <!-- Task Section Template -->
+            {% for task_section, tasks, title in [('in_progress', in_progress_tasks, 'In Progress Tasks'), 
+                                                  ('completed', completed_tasks, 'Completed Tasks'), 
+                                                  ('overdue', overdue_tasks, 'Overdue Tasks')] %}
+                <div id="{{ task_section }}-container">
+                    <h3 class="text-xl font-semibold mb-2">{{ title }} ({{ tasks|length }})</h3>
+                    <ul class="space-y-4 mb-6" id="{{ task_section }}-tasks">
+                        {% for task in tasks %}
+                            <li class="task-item border p-4 rounded flex justify-between items-center">
+                                <div>
+                                    <a href="{% url 'task_detail' task.id %}" class="text-blue-600 hover:underline">{{ task.title }}</a>
+                                    <p class="task-description text-gray-600">{{ task.description }}</p>
+                                    <p class="text-gray-600"><i class="fas fa-info-circle text-gray-400"></i> Status: {{ task.get_status_display }}</p>
+                                    <p class="text-gray-600"><i class="fas fa-flag text-yellow-400"></i> Priority: {{ task.get_priority_display }}</p>
+                                    <p class="text-gray-600"><i class="far fa-clock text-blue-400"></i> Due Date: {{ task.due_date }}</p>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <a href="{% url 'task_update' task.id %}" class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
+                                    <a href="{% url 'task_delete' task.id %}" class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
+                                </div>
+                            </li>
+                        {% empty %}
+                            <li>No {{ task_section }} tasks found.</li>
+                    </ul>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Add Task Form -->
+    <div class="w-full md:w-1/4 p-4 bg-white rounded shadow">
+        <h2 class="text-2xl font-bold mb-4">Add Task</h2>
+        <form method="post" action="{% url 'task_create' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-800">Add Task</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Implement dynamic task loading using jQuery AJAX requests to the Django API endpoints.
+    function loadTasks() {
+        $.ajax({
+            method: 'GET',
+            url: '{% url "api_task_list" %}',  // Replace with your actual API endpoint
+            success: function(data) {
+                // Clear existing tasks
+                $('#in-progress-tasks').empty();
+                $('#completed-tasks').empty();
+                $('#overdue-tasks').empty();
+                
+                // Populate tasks based on their status
+                data.forEach(task => {
+                    let taskHtml = `
+                        <li class="task-item border p-4 rounded flex justify-between items-center">
+                            <div>
+                                <a href="#" class="text-blue-600 hover:underline">${task.title}</a>
+                                <p class="task-description text-gray-600">${task.description}</p>
+                                <p class="text-gray-600"><i class="fas fa-info-circle text-gray-400"></i> Status: ${task.status}</p>
+                                <p class="text-gray-600"><i class="fas fa-flag text-yellow-400"></i> Priority: ${task.priority}</p>
+                                <p class="text-gray-600"><i class="far fa-clock text-blue-400"></i> Due Date: ${task.due_date}</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <a href="#" class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
+                                <a href="#" class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
+                            </div>
+                        </li>
+                    `;
+                    
+                    if (task.status === 'In Progress') {
+                        $('#in-progress-tasks').append(taskHtml);
+                    } else if (task.status === 'Completed') {
+                        $('#completed-tasks').append(taskHtml);
+                    } else if (task.status === 'Overdue') {
+                        $('#overdue-tasks').append(taskHtml);
+                    }
+                });
+            },
+            error: function(error) {
+                console.log('Error loading tasks:', error);
+            }
+        });
+    }
+
+    // Search tasks
+    function searchTasks() {
+        let searchQuery = $('#search').val().toLowerCase();
+        $('.task-item').each(function() {
+            let taskDescription = $(this).find('.task-description').text().toLowerCase();
+            if (taskDescription.includes(searchQuery)) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    }
+
+    // Initial load of tasks
+    $(document).ready(function() {
+        loadTasks();
+    });
+</script>
+{% endblock %}

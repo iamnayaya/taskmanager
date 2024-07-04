@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Task Management Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mx-auto mt-8 flex justify-center items-center min-h-screen">
+    <div class="w-full max-w-md bg-white p-8 border rounded shadow-lg">
+        <h2 class="text-3xl font-semibold mb-6 text-center">Login</h2>
+        {% if form.errors %}
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+            <span class="block sm:inline">{{ form.non_field_errors }}</span>
+        </div>
+        {% endif %}
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="username">
+                    Username
+                </label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                <p class="text-red-500 text-xs italic">{{ form.username.errors }}</p>
+                {% endif %}
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
+                    Password
+                </label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                <p class="text-red-500 text-xs italic">{{ form.password.errors }}</p>
+                {% endif %}
+            </div>
+            <div class="flex items-center justify-between">
+                <button type="submit"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Login
+                </button>
+                <a href="{% url 'password_reset' %}" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
+                    Forgot Password?
+                </a>
+            </div>
+        </form>
+        
+    </div>
+</div>
+{% endblock %}

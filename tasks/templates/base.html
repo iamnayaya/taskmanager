@@ -1,0 +1,141 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tasky{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f0f4f8;
+        }
+        .navbar {
+            background-color: #1DA1F2;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .navbar h1 {
+            font-size: 1.5rem;
+            color: #ffffff;
+        }
+        .navbar .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .navbar .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            transition: background-color 0.3s ease;
+        }
+        .navbar .nav-links a:hover {
+            background-color: #1a91da;
+            color: #ffffff;
+        }
+        .navbar .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .navbar .user-info span {
+            margin-right: 1rem;
+            color: #ffffff;
+        }
+        .navbar .auth-button {
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            transition: background-color 0.3s ease;
+            background-color: #f95738;
+            color: #ffffff;
+        }
+        .navbar .auth-button:hover {
+            background-color: #e53e3e;
+        }
+        .footer {
+            background-color: #1DA1F2;
+            color: #ffffff;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .main-content {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header>
+        <nav class="navbar p-4 text-white">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="font-bold">Tasky</h1>
+                <div class="nav-links hidden md:flex">
+                    <a href="{% url 'dashboard' %}">Dashboard</a>
+                    <a href="{% url 'task_list' %}">Tasks</a>
+                    <a href="{% url 'calendar' %}">Calendar</a>
+                    <a href="{% url 'members' %}">Members</a>
+                </div>
+                <div class="user-info">
+                    {% if user.is_authenticated %}
+                        <span>{{ user.username }}</span>
+                        <a href="{% url 'logout' %}" class="auth-button">Logout</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="auth-button">Login</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto mt-6 flex flex-wrap">
+        <!-- Sidebar for smaller screens -->
+        <div class="w-full md:hidden p-4 bg-gray-100 rounded shadow mb-4">
+            <ul class="space-y-2">
+                <li><a href="{% url 'dashboard' %}" class="block p-2 hover:bg-gray-200"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="{% url 'task_list' %}" class="block p-2 hover:bg-gray-200"><i class="fas fa-tasks"></i> Tasks</a></li>
+                <li><a href="{% url 'calendar' %}" class="block p-2 hover:bg-gray-200"><i class="fas fa-calendar-alt"></i> Calendar</a></li>
+                <li><a href="{% url 'members' %}" class="block p-2 hover:bg-gray-200"><i class="fas fa-users"></i> Members</a></li>
+            </ul>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="w-full md:w-3/4 mx-auto main-content">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="footer p-4 text-center mt-6">
+        <div class="container mx-auto">
+            <p>&copy; 2024 Task Management Dashboard. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Example jQuery code to handle dynamic content
+            $('.auth-button').on('click', function(event) {
+                event.preventDefault();
+                var url = $(this).attr('href');
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    success: function(response) {
+                        // Handle successful response
+                        window.location.href = url;
+                    },
+                    error: function(xhr, status, error) {
+                        // Handle error response
+                        alert('Error: ' + error);
+                    }
+                });
+            });
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

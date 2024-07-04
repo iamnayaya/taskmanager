@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Task List{% endblock %}
+
+{% block content %}
+<div class="flex">
+    <aside class="w-1/4 p-4 bg-white rounded shadow">
+        <ul>
+            <li><a href="{% url 'dashboard' %}" class="block p-2 hover:bg-gray-200"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li><a href="{% url 'task_list' %}" class="block p-2 hover:bg-gray-200"><i class="fas fa-tasks"></i> Tasks</a></li>
+            <li><a href="{% url 'calendar' %}" class="block p-2 hover:bg-gray-200"><i class="fas fa-calendar-alt"></i> Calendar</a></li>
+            <li><a href="{% url 'members' %}" class="block p-2 hover:bg-gray-200"><i class="fas fa-users"></i> Members</a></li>
+        </ul>
+    </aside>
+
+    <div class="w-3/4 p-4 ml-4 bg-white rounded shadow">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold">Task List</h2>
+            <input type="text" id="search" placeholder="Search tasks" class="p-2 border rounded">
+        </div>
+
+        <!-- In-Progress Tasks -->
+        <div class="mb-6">
+            <h3 class="text-xl font-bold mb-2">In-Progress Tasks ({{ in_progress_tasks|length }})</h3>
+            <ul class="space-y-4" id="in-progress-tasks">
+                {% for task in in_progress_tasks %}
+                <li class="border p-4 rounded flex justify-between items-center">
+                    <div>
+                        <a href="{% url 'task_detail' task.id %}" class="text-blue-600 hover:underline">{{ task.title }}</a>
+                        <p class="text-gray-600">{{ task.description }}</p>
+                        <p class="text-gray-600">
+                            <i class="fas fa-info-circle text-gray-400"></i> Status: {{ task.get_status_display }}
+                        </p>
+                        <p class="text-gray-600">
+                            <i class="fas fa-flag text-yellow-400"></i> Priority: {{ task.get_priority_display }}
+                        </p>
+                        <p class="text-gray-600">
+                            <i class="far fa-clock text-blue-400"></i> Due Date: {{ task.due_date }}
+                        </p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <a href="{% url 'task_update' task.id %}" class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
+                        <a href="{% url 'task_delete' task.id %}" class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
+                    </div>
+                </li>
+                {% empty %}
+                <li>No in-progress tasks found.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Completed Tasks -->
+        <div class="mb-6">
+            <h3 class="text-xl font-bold mb-2">Completed Tasks ({{ completed_tasks|length }})</h3>
+            <ul class="space-y-4" id="completed-tasks">
+                {% for task in completed_tasks %}
+                <li class="border p-4 rounded flex justify-between items-center">
+                    <div>
+                        <a href="{% url 'task_detail' task.id %}" class="text-blue-600 hover:underline">{{ task.title }}</a>
+                        <p class="text-gray-600">{{ task.description }}</p>
+                        <p class="text-gray-600">
+                            <i class="fas fa-info-circle text-gray-400"></i> Status: {{ task.get_status_display }}
+                        </p>
+                        <p class="text-gray-600">
+                            <i class="fas fa-flag text-yellow-400"></i> Priority: {{ task.get_priority_display }}
+                        </p>
+                        <p class="text-gray-600">
+                            <i class="far fa-clock text-blue-400"></i> Due Date: {{ task.due_date }}
+                        </p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <a href="{% url 'task_update' task.id %}" class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
+                        <a href="{% url 'task_delete' task.id %}" class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
+                    </div>
+                </li>
+                {% empty %}
+                <li>No completed tasks found.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Overdue Tasks -->
+        <div class="mb-6">
+            <h3 class="text-xl font-bold mb-2">Overdue Tasks ({{ overdue_tasks|length }})</h3>
+            <ul class="space-y-4" id="overdue-tasks">
+                {% for task in overdue_tasks %}
+                <li class="border p-4 rounded flex justify-between items-center">
+                    <div>
+                        <a href="{% url 'task_detail' task.id %}" class="text-blue-600 hover:underline">{{ task.title }}</a>
+                        <p class="text-gray-600">{{ task.description }}</p>
+                        <p class="text-gray-600">
+                            <i class="fas fa-info-circle text-gray-400"></i> Status: {{ task.get_status_display }}
+                        </p>
+                        <p class="text-gray-600">
+                            <i class="fas fa-flag text-yellow-400"></i> Priority: {{ task.get_priority_display }}
+                        </p>
+                        <p class="text-gray-600">
+                            <i class="far fa-clock text-blue-400"></i> Due Date: {{ task.due_date }}
+                        </p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <a href="{% url 'task_update' task.id %}" class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
+                        <a href="{% url 'task_delete' task.id %}" class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
+                    </div>
+                </li>
+                {% empty %}
+                <li>No overdue tasks found.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#search').on('input', function() {
+            var query = $(this).val().toLowerCase();
+            filterTasks('#in-progress-tasks li', query);
+            filterTasks('#completed-tasks li', query);
+            filterTasks('#overdue-tasks li', query);
+        });
+
+        function filterTasks(selector, query) {
+            $(selector).each(function() {
+                var task = $(this).text().toLowerCase();
+                $(this).toggle(task.includes(query));
+            });
+        }
+    });
+</script>
+{% endblock %}
